@@ -1,1 +1,1 @@
-./svFiles/pulse_ctrl.sv
+./svFiles/module_top.sv

@@ -1,23 +1,43 @@
-MODULE = pulse_ctrl
+MODULE =module_top
 
+OBJ_DIR = obj_dir
+# --- 修改点：使用绝对路径 ---
+INC_DIR = $(abspath cppFiles/head)
+SRC_DIR = cppFiles/src
+SV_DIR = svFiles
 
+CFLAGS = -I$(INC_DIR) -I/usr/include/eigen3
+# 源文件列表
+TB_CPPS = sim_main.cpp $(shell find $(SRC_DIR) -name "*.cpp")# traverse all cpp files in src
 SV_FILES = -f files.f
 
-# all cpp files
-TB_CPPS = $(wildcard cppFiles/*.cpp)
-# 入口文件
-MAIN_CPP = sim_main.cpp
+# --- 修改点：这里会自动展开为绝对路径 ---
+CFLAGS = -I$(INC_DIR)
 
+V_FLAGS = -Wall --trace --cc --exe
+V_FLAGS += -CFLAGS "$(CFLAGS)"
 
-all:
-	# Verilator 会自动区分：.sv 用 SV 编译器，.cpp 用 C++ 编译器
-	verilator -Wall --trace --cc $(SV_FILES) --exe  $(MAIN_CPP) $(TB_CPPS)
-	make -C obj_dir -f V$(MODULE).mk V$(MODULE)
-	./obj_dir/V$(MODULE)
-	
+EXE = $(OBJ_DIR)/V$(MODULE)
+
+.PHONY: all build run wave clean
+
+all: run
+
+$(OBJ_DIR)/V$(MODULE).mk:  files.f
+	@echo "--- [Verilator] Generating C++ files ---"
+	verilator $(V_FLAGS) $(SV_FILES) $(TB_CPPS) --Mdir $(OBJ_DIR)
+
+build: $(OBJ_DIR)/V$(MODULE).mk $(TB_CPPS)
+	@echo "--- [Make] Compiling C++ ---"
+	$(MAKE) -j -C $(OBJ_DIR) -f V$(MODULE).mk
+
+run: build
+	@echo "--- [Sim] Running Simulation ---"
+	./$(EXE)
+
 wave:
 	gtkwave wave.vcd &
 
 clean:
-	rm -rf obj_dir
+	rm -rf $(OBJ_DIR)
 	rm -f *.vcd *.log
