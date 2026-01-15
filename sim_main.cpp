@@ -15,9 +15,9 @@ int main(int argc, char** argv) {
     tfp->open("wave.vcd"); 
 
     int main_time = 0;
-    while (main_time < 40) { // 稍微跑长一点
-        top->clk = main_time % 2; 
-
+    while (main_time < 70) { // 稍微跑长一点
+        top->clk = main_time; 
+        driver->step(main_time);
         if (main_time < 4) top->rst_n = 0; else top->rst_n = 1;
 
         if (main_time == 10) { 
@@ -27,15 +27,13 @@ int main(int argc, char** argv) {
 
         top->eval();
         tfp->dump(main_time); // 将当前时刻的数据存入波形
-
-        // if (top->clk && main_time > 4) {
-        //     printf("Time: %d | Active: %d | Out: 0x%x\n", main_time, top->pulse_active, top->out_val);
-        // }
+        if(top->trigger) {
+            printf("Time: %d | Triggered!\n", main_time);
+        }
+     
         main_time++;
     }
     tfp->close();
-
-
 
     delete driver;
     delete top;

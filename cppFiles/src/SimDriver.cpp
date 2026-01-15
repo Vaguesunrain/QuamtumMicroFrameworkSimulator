@@ -1,9 +1,11 @@
 #include "SimDriver.hpp"
 #include "Vmodule_top.h" 
-
+#include "GateLibrary.hpp"
+GateLibrary gate_lib;
 SimDriver::SimDriver(Vmodule_top* top_ptr, int num_qubits) : dut(top_ptr) {
     init_qubits(num_qubits);
-    qubits->install_module(std::make_shared<BlochSphereModule>());
+    auto bloch_module = std::make_shared<BlochSphereModule>(gate_lib);
+    qubits->install_module(bloch_module);
 }
 
 SimDriver::~SimDriver() {
@@ -12,6 +14,12 @@ SimDriver::~SimDriver() {
 
 void SimDriver::step(uint64_t time) {
    rst_n();
+   if(dut->trigger) {
+       std::cout << "[SimDriver] Time " << time << ": Trigger received. Performing operations..." << std::endl;
+       // Example: Apply a Hadamard gate to qubit 0 on trigger
+       qubits->apply_gate("H", {0});
+       qubits->print_status();
+   }
 }
 
 void SimDriver::init_qubits(int num_qubits) {
