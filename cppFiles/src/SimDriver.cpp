@@ -2,10 +2,27 @@
 #include "Vmodule_top.h" 
 #include "GateLibrary.hpp"
 GateLibrary gate_lib;
-SimDriver::SimDriver(Vmodule_top* top_ptr, int num_qubits) : dut(top_ptr) {
+SimDriver::SimDriver(Vmodule_top* top_ptr, int num_qubits, short select_module) : dut(top_ptr) {
     init_qubits(num_qubits);
-    auto bloch_module = std::make_shared<BlochSphereModule>(gate_lib);
-    qubits->install_module(bloch_module);
+    if(select_module == 1) {
+        auto density_module = std::make_shared<DensityMatrixModule>(gate_lib);
+        qubits->install_module(density_module);
+    }
+    else if(select_module == 2) {
+        auto bloch_module = std::make_shared<BlochSphereModule>(gate_lib);
+        qubits->install_module(bloch_module);
+    }
+    else if(select_module == 3) {
+        auto density_module = std::make_shared<DensityMatrixModule>(gate_lib);
+        qubits->install_module(density_module);
+        auto bloch_module = std::make_shared<BlochSphereModule>(gate_lib);
+        qubits->install_module(bloch_module);
+    }
+    else{
+        auto density_module = std::make_shared<DensityMatrixModule>(gate_lib);
+        qubits->install_module(density_module);
+        std::cout << "[SimDriver] Default: DensityMatrixModule installed." << std::endl;
+    }
 }
 
 SimDriver::~SimDriver() {
@@ -19,6 +36,7 @@ void SimDriver::step(uint64_t time) {
        // Example: Apply a Hadamard gate to qubit 0 on trigger
        qubits->apply_gate("H", {0});
        qubits->print_status();
+       qubits->print_full_matrix();
    }
 }
 

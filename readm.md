@@ -48,6 +48,57 @@ classDiagram
 ```
 
 
+```mermaid
+graph TD
+    %% 驱动层：Testbench & Input
+    subgraph Testbench_Layer [Driver Layer]
+        TB[Quantum Testbench] --> |Timed Instructions| CIR[Circuit Buffer / QASM]
+        CAL[IBM Calibration Data] --> |JSON/API| PCM
+    end
+
+    %% 调度层：逻辑大脑
+    subgraph Scheduling_Layer [Scheduling & Control Layer]
+        CIR --> DES[Discrete Event Scheduler]
+        DES --> |1. Calc Idle DeltaT| DES
+        DES --> |2. Trigger Gate Event| MM
+        DES --> |3. Sync Global Time| PCM
+    end
+
+    %% 物理限制与噪声层
+    subgraph Physics_Layer [Physical Constraint Layer]
+        PCM[Physical Constraint Manager]
+        PCM --> |T1 / T2 Decay| IDLE[Idle Noise Module]
+        PCM --> |Coupling Map| CTS[Crosstalk Engine]
+        PCM --> |Residual ZZ| STC[Static Interaction Module]
+        
+        IDLE -.-> |Apply Factors| MM
+        CTS -.-> |Apply Factors| MM
+    end
+
+    %% HPC 核心与内存调度层
+    subgraph HPC_Core_Layer [HPC & Memory Management Layer]
+        MM[Memory/NUMA Manager] --> |Tiling / Blocking| CACHE[L3 Cache Optimization]
+        MM --> |Thread Affinity| OMP[OpenMP 128-Core Worker]
+        
+        OMP --> |SIMD / AVX-512| KERNEL[Density Matrix Kernel]
+        KERNEL <--> |1TB Shared Memory| RAM[Main RAM / NUMA Nodes]
+    end
+
+    %% 监控与验证
+    subgraph Verification_Layer [Verification & Monitoring]
+        KERNEL --> |State Trace| MON[Numerical Stability Monitor]
+        MON --> |Assertion| TB
+        KERNEL --> |Fidelity Calc| VAL[Result Validator]
+    end
+
+    %% 样式定义
+    style RAM fill:#f96,stroke:#333,stroke-width:2px
+    style DES fill:#bbf,stroke:#333,stroke-width:2px
+    style MM fill:#bfb,stroke:#333,stroke-width:2px
+    style TB fill:#f9f,stroke:#333,stroke-width:2px
+```
+
+
 ## 时钟树
 
 1.建议分区域，qubit附近采用差分低频信号
@@ -61,3 +112,7 @@ classDiagram
 1.慢速有时间差的时钟向qubit和gates发送流水线指令
 vs
 2.指令堆集在qubit附近，传入低平时钟，然后在PLL产高速时钟爆发执行
+
+## 密度矩阵
+1.多线程
+2.串扰等操作不要操作整个矩阵
