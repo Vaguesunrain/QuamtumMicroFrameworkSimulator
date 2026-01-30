@@ -46,7 +46,9 @@ void Qubits::apply_gate(std::string name, int target) {
         mod->on_gate(name, target);
     }
 }
-
+void Qubits::apply_multi_gate(std::string name, const std::vector<int>& targets) {
+    for (auto& mod : m_modules) mod->on_multi_gate(name, targets);
+}
 void Qubits::print_status() {
     for (auto& mod : m_modules) {
         mod->on_print();

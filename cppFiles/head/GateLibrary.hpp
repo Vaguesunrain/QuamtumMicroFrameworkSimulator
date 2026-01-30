@@ -15,14 +15,20 @@ public:
         using namespace std::complex_literals; // for 1i
         // Pauli-X
         MatrixXc X(2, 2); X << 0, 1, 1, 0;
-        m_gate_map.emplace("X", Gate("X", 1, 20.0, X));
+        m_gate_map.emplace("X", Gate("X", 1, 20.0, false, X));
         // Hadamard
         MatrixXc H(2, 2); H << 1, 1, 1, -1; H /= sqrt(2.0);
-        m_gate_map.emplace("H", Gate("H", 1, 20.0, H));
+        m_gate_map.emplace("H", Gate("H", 1, 20.0, false, H));
         // CNOT (4x4 matrix)
         MatrixXc CNOT(4, 4); CNOT << 1,0,0,0, 0,1,0,0, 0,0,0,1, 0,0,1,0;
-        m_gate_map.emplace("CNOT", Gate("CNOT", 2, 200.0, CNOT));
-        // other gates.....
+        m_gate_map.emplace("CNOT", Gate("CNOT", 2, 200.0, true, CNOT));
+        
+        /* ToDo: SWAP gate is not basic ,but we can use this replacing 3 CNOTs .
+            Becuse 3 CNOTs is more slower than SWAP gate . 
+            And we need a special optimised kernel to support SWAP gate.    
+        */
+        MatrixXc SWAP(4,4); SWAP << 1,0,0,0, 0,0,1,0, 0,1,0,0, 0,0,0,1;
+        m_gate_map.emplace("SWAP", Gate("SWAP", 2, 300.0, false, SWAP));
     }
 
     //make your own gate library

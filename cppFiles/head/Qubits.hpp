@@ -15,6 +15,7 @@ public:
     virtual bool requests_global_state() const { return false; }//state that module needs full access to big ram
     virtual void attach_data(std::complex<double>* raw_state_ptr) {} 
     virtual void on_gate(const std::string& gate, int target_q) {}
+    virtual void on_multi_gate(const std::string& gate, const std::vector<int>& target_qs) {}
     virtual void on_print() {}
     virtual void try_print_full_matrix() {}
     virtual void reset() {}
@@ -41,6 +42,7 @@ public:
     ~Qubits();
     void install_module(std::shared_ptr<QubitModule> mod);
     void apply_gate(std::string name, int target); 
+    void apply_multi_gate(std::string name, const std::vector<int>& targets);
     void print_status();
     void reset();
     void print_full_matrix();

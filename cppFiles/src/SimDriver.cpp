@@ -30,13 +30,17 @@ SimDriver::~SimDriver() {
 }
 
 void SimDriver::step(uint64_t time) {
-   rst_n();
-   if(dut->trigger) {
-       std::cout << "[SimDriver] Time " << time << ": Trigger received. Performing operations..." << std::endl;
+    rst_n();
+    if(dut->trigger) {
+        std::cout << "[SimDriver] Time " << time << ": Trigger received. Performing operations..." << std::endl;
        // Example: Apply a Hadamard gate to qubit 0 on trigger
-       qubits->apply_gate("H", {0});
-       qubits->print_status();
-       qubits->print_full_matrix();
+        qubits->apply_gate("H", 0);
+        qubits->print_full_matrix();
+        qubits->apply_multi_gate("CNOT", {0,1});
+        qubits->print_full_matrix();
+        qubits->apply_multi_gate("SWAP", {0,1});
+        qubits->print_status();
+        qubits->print_full_matrix();
    }
 }
 
